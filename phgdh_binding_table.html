@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Table S1 — PHGDH Candidate Binding & Physicochemical Properties</title>
+<style>
+  body { font-family: Arial, sans-serif; font-size: 12px; margin: 20px; background: #fff; color: #222; }
+  h2 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  p.subtitle { font-size: 11px; color: #555; margin-bottom: 12px; }
+  .controls { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; flex-wrap: wrap; }
+  .controls label { font-size: 11px; color: #555; }
+  select { font-size: 11px; padding: 3px 6px; border: 1px solid #ccc; border-radius: 4px; background: #fff; }
+  .tbl-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; min-width: 700px; }
+  thead th { background: #f5f5f5; border: 1px solid #ddd; padding: 6px 8px; text-align: center; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  tbody td { border: 1px solid #e0e0e0; padding: 5px 8px; text-align: center; white-space: nowrap; }
+  td.smiles-cell { font-family: monospace; font-size: 10px; color: #444; text-align: left; white-space: nowrap; max-width: 260px; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+  td.smiles-cell:hover { white-space: normal; word-break: break-all; background: #fffbe6; max-width: none; }
+  tr.ref-row td { background: #f0f4ff; font-style: italic; }
+  tr.primary-hit td { background: #f0faf0; }
+  tr:hover td { background: #fafafa; }
+  tr.ref-row:hover td { background: #e6eeff; }
+  tr.primary-hit:hover td { background: #e4f5e6; }
+  .rank-cell { font-weight: 600; color: #444; }
+  .hit-badge { display: inline-block; background: #d4edda; color: #155724; border-radius: 8px; padding: 1px 6px; font-size: 10px; font-weight: 600; }
+  .ref-badge { display: inline-block; background: #e2e8f8; color: #1a3a8a; border-radius: 8px; padding: 1px 6px; font-size: 10px; font-weight: 600; }
+  .warn { color: #b45309; font-weight: 600; }
+  .legend { display: flex; gap: 16px; margin-bottom: 8px; font-size: 10px; color: #555; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 4px; }
+  .legend-swatch { width: 12px; height: 12px; border-radius: 2px; }
+  .footnote { font-size: 10px; color: #777; margin-top: 8px; }
+  .copy-btn { font-size: 9px; margin-left: 4px; padding: 1px 4px; border: 1px solid #ccc; border-radius: 3px; cursor: pointer; background: #f9f9f9; color: #555; }
+  .copy-btn:hover { background: #e8e8e8; }
+</style>
+</head>
+<body>
+
+<h2>Table S1. Binding Affinities and Physicochemical Properties of PHGDH HHTH-Targeting Candidate Molecules</h2>
+<p class="subtitle">23 de novo generated candidates ranked by predicted AutoDock Vina binding affinity (ΔG, kcal/mol). NCT-503 shown as reference. Primary hits (ΔG ≤ −7.5 kcal/mol) highlighted in green. Hover over a SMILES string to expand it; click the copy button to copy it.</p>
+
+<div class="controls">
+  <label>Filter:</label>
+  <select id="filterSel">
+    <option value="all">All molecules</option>
+    <option value="hits">Primary hits only (≤ −7.5)</option>
+    <option value="moderate">Moderate binders (−7.5 to −6.0)</option>
+  </select>
+  <label>Sort by:</label>
+  <select id="sortSel">
+    <option value="rank">Rank (affinity)</option>
+    <option value="qed">QED (drug-likeness)</option>
+    <option value="mw">Molecular weight</option>
+    <option value="logp">LogP</option>
+  </select>
+</div>
+
+<div class="legend">
+  <span class="legend-item"><span class="legend-swatch" style="background:#f0faf0;border:1px solid #78c487"></span>Primary hit (ΔG ≤ −7.5 kcal/mol)</span>
+  <span class="legend-item"><span class="legend-swatch" style="background:#f0f4ff;border:1px solid #7a9fe0"></span>NCT-503 reference</span>
+  <span class="legend-item"><span style="color:#b45309;font-weight:600">Orange</span> = LogP approaching Lipinski limit (&gt;5.0)</span>
+</div>
+
+<div class="tbl-wrap">
+<table id="mainTbl">
+<thead>
+  <tr>
+    <th>Rank</th>
+    <th>Compound</th>
+    <th>SMILES</th>
+    <th>ΔG (kcal/mol)</th>
+    <th>MW (Da)</th>
+    <th>LogP</th>
+    <th>HBD</th>
+    <th>HBA</th>
+    <th>TPSA (Å²)</th>
+    <th>QED</th>
+    <th>Tag</th>
+  </tr>
+</thead>
+<tbody id="tbody"></tbody>
+</table>
+</div>
+
+<p class="footnote">ΔG = predicted Gibbs free energy of binding (AutoDock Vina v1.2.5). MW = molecular weight. LogP = calculated partition coefficient. HBD = hydrogen bond donors. HBA = hydrogen bond acceptors. TPSA = topological polar surface area. QED = quantitative estimate of drug-likeness (RDKit). All candidates satisfy Lipinski's Rule of Five. NCT-503 affinity from independent docking run against HHTH binding site. Hover SMILES cell to expand; click Copy to copy string.</p>
+
+<script>
+const rows = [
+  {rank:'Ref',id:'NCT-503',smiles:'CC1=CC(NC(N2CCN(CC3=CC=C(C(F)(F)F)C=C3)CC2)=S)=NC(C)=C1',dg:-9.285,mw:408.5,logp:4.23,hbd:1,hba:3,tpsa:31.4,qed:null,ref:true},
+  {rank:1, id:'MOL_015',smiles:'Cc1nsc2ccc(-c3ccc(CN)c(F)c3)cc12',dg:-8.034,mw:272.3,logp:3.87,hbd:1,hba:3,tpsa:38.9,qed:0.769,hit:true},
+  {rank:2, id:'MOL_002',smiles:'NCc1ccc(-c2ccc3sncc3c2)cc1F',dg:-7.739,mw:258.3,logp:3.56,hbd:1,hba:3,tpsa:38.9,qed:0.763,hit:true},
+  {rank:3, id:'MOL_010',smiles:'Oc1cnccc1Cc1occc1C1=CC=C1',dg:-7.713,mw:225.2,logp:2.92,hbd:1,hba:3,tpsa:46.3,qed:0.873,hit:true},
+  {rank:4, id:'MOL_016',smiles:'Cc1cc(Br)cc(-c2ccc3[nH]ncc3c2)c1',dg:-7.666,mw:287.2,logp:4.30,hbd:1,hba:1,tpsa:28.7,qed:0.710,hit:true},
+  {rank:5, id:'MOL_005',smiles:'Brc1cccc(-c2ccc3[nH]ncc3c2)c1',dg:-7.575,mw:273.1,logp:3.99,hbd:1,hba:1,tpsa:28.7,qed:0.713,hit:true},
+  {rank:6, id:'MOL_023',smiles:'CC1=C([C@@H](C)C#N)C(F)=CCCCN1[C@@H]1CCCCCC[C@H]1C',dg:-7.285,mw:318.5,logp:5.73,hbd:0,hba:2,tpsa:27.0,qed:0.650},
+  {rank:7, id:'MOL_021',smiles:'C[C@H](N)c1ccc(-c2ccncc2)cc1F',dg:-7.169,mw:216.3,logp:2.91,hbd:1,hba:2,tpsa:38.9,qed:0.838},
+  {rank:8, id:'MOL_008',smiles:'Cc1cc([C@@H](C)N)c(F)cc1-c1ccoc1Cl',dg:-6.967,mw:253.7,logp:4.07,hbd:1,hba:2,tpsa:39.2,qed:0.876},
+  {rank:9, id:'MOL_011',smiles:'CNCc1ccc(-c2ccncc2)cc1F',dg:-6.941,mw:216.3,logp:2.61,hbd:1,hba:2,tpsa:24.9,qed:0.853},
+  {rank:10,id:'MOL_019',smiles:'CNCc1ccc(-c2ccoc2Cl)cc1F',dg:-6.930,mw:239.7,logp:3.46,hbd:1,hba:2,tpsa:25.2,qed:0.888},
+  {rank:11,id:'MOL_009',smiles:'Cc1c(-c2ccoc2Cl)cc(F)c([C@@H](C)N)c1C',dg:-6.926,mw:267.7,logp:4.38,hbd:1,hba:2,tpsa:39.2,qed:0.877},
+  {rank:12,id:'MOL_018',smiles:'Cc1cc(O)ccc1Cc1occc1C1=CC=C1',dg:-6.903,mw:238.3,logp:3.84,hbd:1,hba:2,tpsa:33.4,qed:0.881},
+  {rank:13,id:'MOL_004',smiles:'C[S@@](=O)CCCCC[C@@H]1[C@@H](O)CCCN1C1CCCCCCC1',dg:-6.896,mw:343.6,logp:3.86,hbd:1,hba:3,tpsa:40.5,qed:0.714},
+  {rank:14,id:'MOL_001',smiles:'COc1cccc(-c2cccc(O)c2)c1',dg:-6.853,mw:200.2,logp:3.07,hbd:1,hba:2,tpsa:29.5,qed:0.807},
+  {rank:15,id:'MOL_006',smiles:'NCc1ccc(-c2ccncc2)cc1F',dg:-6.799,mw:202.2,logp:2.35,hbd:1,hba:2,tpsa:38.9,qed:0.811},
+  {rank:16,id:'MOL_012',smiles:'NCc1ccc(-c2ccoc2Cl)cc1F',dg:-6.697,mw:225.6,logp:3.20,hbd:1,hba:2,tpsa:39.2,qed:0.853},
+  {rank:17,id:'MOL_003',smiles:'O[C@H]1CCC[C@@H](n2cnc3ncccc32)C1',dg:-6.682,mw:217.3,logp:1.91,hbd:1,hba:3,tpsa:50.9,qed:0.793},
+  {rank:18,id:'MOL_014',smiles:'COc1cccc(-c2cc(O)ccc2C)c1',dg:-6.659,mw:214.3,logp:3.38,hbd:1,hba:2,tpsa:29.5,qed:0.830},
+  {rank:19,id:'MOL_007',smiles:'CNCc1cc(C)c(-c2ccncc2)cc1F',dg:-6.626,mw:230.3,logp:2.92,hbd:1,hba:2,tpsa:24.9,qed:0.877},
+  {rank:20,id:'MOL_017',smiles:'CNCc1c(F)cc(-c2ccoc2Cl)c(C)c1C',dg:-6.620,mw:267.7,logp:4.08,hbd:1,hba:2,tpsa:25.2,qed:0.907},
+  {rank:21,id:'MOL_020',smiles:'Cc1ccnc2ncn([C@@H]3CCC[C@H](O)C3)c12',dg:-6.533,mw:231.3,logp:2.22,hbd:1,hba:3,tpsa:50.9,qed:0.818},
+  {rank:22,id:'MOL_022',smiles:'CCc1coc(Cl)c1C1=CC=C1c1ccoc1Cl',dg:-6.497,mw:281.1,logp:5.22,hbd:0,hba:2,tpsa:26.3,qed:0.770},
+  {rank:23,id:'MOL_013',smiles:'Cc1cc(CN)c(F)cc1-c1ccoc1Cl',dg:-6.475,mw:239.7,logp:3.51,hbd:1,hba:2,tpsa:39.2,qed:0.871},
+];
+
+function copySmiles(btn, smiles) {
+  navigator.clipboard.writeText(smiles).then(() => {
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = 'Copy'; }, 1500);
+  });
+}
+
+function render() {
+  const filter = document.getElementById('filterSel').value;
+  const sort = document.getElementById('sortSel').value;
+
+  let data = [...rows];
+  if (filter === 'hits') data = data.filter(d => d.ref || d.hit);
+  if (filter === 'moderate') data = data.filter(d => d.ref || (!d.hit && d.dg <= -6.0));
+
+  const ref = data.find(d => d.ref);
+  let candidates = data.filter(d => !d.ref);
+
+  if (sort === 'rank') candidates.sort((a,b) => a.dg - b.dg);
+  else if (sort === 'qed') candidates.sort((a,b) => (b.qed||0) - (a.qed||0));
+  else if (sort === 'mw') candidates.sort((a,b) => a.mw - b.mw);
+  else if (sort === 'logp') candidates.sort((a,b) => a.logp - b.logp);
+
+  const tbody = document.getElementById('tbody');
+  let html = '';
+
+  if (ref) {
+    const shortSmiles = ref.smiles.length > 35 ? ref.smiles.slice(0,35)+'…' : ref.smiles;
+    html += `<tr class="ref-row">
+      <td class="rank-cell">—</td>
+      <td><strong>${ref.id}</strong></td>
+      <td class="smiles-cell" title="${ref.smiles}">${shortSmiles}<button class="copy-btn" onclick="copySmiles(this,'${ref.smiles.replace(/'/g,"\\'")}')">Copy</button></td>
+      <td><strong>${ref.dg.toFixed(3)}</strong></td>
+      <td>${ref.mw.toFixed(1)}</td>
+      <td>${ref.logp.toFixed(2)}</td>
+      <td>${ref.hbd}</td>
+      <td>${ref.hba}</td>
+      <td>${ref.tpsa.toFixed(1)}</td>
+      <td>—</td>
+      <td><span class="ref-badge">Reference</span></td>
+    </tr>`;
+  }
+
+  candidates.forEach(d => {
+    const logpCell = d.logp > 5.0 ? `<span class="warn">${d.logp.toFixed(2)}</span>` : d.logp.toFixed(2);
+    const rowCls = d.hit ? 'primary-hit' : '';
+    const tag = d.hit ? `<span class="hit-badge">Primary hit</span>` : '—';
+    const shortSmiles = d.smiles.length > 35 ? d.smiles.slice(0,35)+'…' : d.smiles;
+    const escapedSmiles = d.smiles.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    html += `<tr class="${rowCls}">
+      <td class="rank-cell">${d.rank}</td>
+      <td><strong>${d.id}</strong></td>
+      <td class="smiles-cell" title="${d.smiles}">${shortSmiles}<button class="copy-btn" onclick="copySmiles(this,'${escapedSmiles}')">Copy</button></td>
+      <td>${d.dg.toFixed(3)}</td>
+      <td>${d.mw.toFixed(1)}</td>
+      <td>${logpCell}</td>
+      <td>${d.hbd}</td>
+      <td>${d.hba}</td>
+      <td>${d.tpsa.toFixed(1)}</td>
+      <td>${d.qed !== null ? d.qed.toFixed(3) : '—'}</td>
+      <td>${tag}</td>
+    </tr>`;
+  });
+
+  tbody.innerHTML = html;
+}
+
+document.getElementById('filterSel').addEventListener('change', render);
+document.getElementById('sortSel').addEventListener('change', render);
+render();
+</script>
+</body>
+</html>
