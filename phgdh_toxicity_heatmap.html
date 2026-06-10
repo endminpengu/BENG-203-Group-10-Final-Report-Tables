@@ -1,0 +1,162 @@
+
+<style>
+h2.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+.wrap{padding:1rem 0;font-size:13px}
+.controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem;align-items:center}
+.controls label{font-size:12px;color:var(--color-text-secondary)}
+select{font-size:12px;padding:4px 8px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);color:var(--color-text-primary)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:1rem;font-size:11px;color:var(--color-text-secondary)}
+.legend-item{display:flex;align-items:center;gap:4px}
+.legend-swatch{width:12px;height:12px;border-radius:2px;flex-shrink:0}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:5px 6px;font-weight:500;font-size:11px;color:var(--color-text-secondary);border-bottom:0.5px solid var(--color-border-tertiary);white-space:nowrap;position:sticky;top:0;background:var(--color-background-primary);z-index:1}
+td{padding:5px 6px;border-bottom:0.5px solid var(--color-border-tertiary);white-space:nowrap;color:var(--color-text-primary)}
+tr.baseline td{background:var(--color-background-secondary)}
+tr:hover td{background:var(--color-background-secondary)}
+.pill{display:inline-block;padding:2px 7px;border-radius:10px;font-size:11px;font-weight:500}
+.pill-green{background:#EAF3DE;color:#27500A}
+.pill-amber{background:#FAEEDA;color:#633806}
+.pill-red{background:#FCEBEB;color:#791F1F}
+.pill-gray{background:#F1EFE8;color:#444441}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%}
+.dot-y{background:#E24B4A}
+.dot-n{background:#C0DD97}
+.dot-m{background:#FAC775}
+.mol-name{font-weight:500;color:var(--color-text-primary)}
+.sort-btn{cursor:pointer;user-select:none}
+.sort-btn:hover{color:var(--color-text-primary)}
+</style>
+<h2 class="sr-only">Toxicity heatmap comparing 23 designed molecules against NCT-503 (PHGDH inhibitor baseline) across LD50, toxicity class, and key safety endpoints.</h2>
+<div class="wrap">
+<div class="controls">
+  <label>Sort by</label>
+  <select id="sortSel">
+    <option value="id">Molecule #</option>
+    <option value="ld50">LD50 (high→low)</option>
+    <option value="class">Toxicity class</option>
+    <option value="flags">Active flags (low→high)</option>
+  </select>
+  <label style="margin-left:8px">Filter class</label>
+  <select id="filterSel">
+    <option value="all">All classes</option>
+    <option value="3">Class 3 only</option>
+    <option value="4">Class 4 only</option>
+    <option value="5">Class 5 only</option>
+  </select>
+</div>
+<div class="legend">
+  <span class="legend-item"><span class="legend-swatch" style="background:#EAF3DE;border:0.5px solid #639922"></span>Class 5 — practically non-toxic</span>
+  <span class="legend-item"><span class="legend-swatch" style="background:#FAEEDA;border:0.5px solid #BA7517"></span>Class 4 — harmful</span>
+  <span class="legend-item"><span class="legend-swatch" style="background:#FCEBEB;border:0.5px solid #E24B4A"></span>Class 3 — toxic</span>
+  <span class="legend-item"><span class="dot dot-y" style="width:10px;height:10px;border-radius:2px"></span>Active flag</span>
+  <span class="legend-item"><span class="dot dot-n" style="width:10px;height:10px;border-radius:2px"></span>Inactive</span>
+  <span class="legend-item"><span class="dot dot-m" style="width:10px;height:10px;border-radius:2px"></span>Low accuracy (&lt;30%)</span>
+</div>
+<div class="tbl-wrap">
+<table id="mainTbl">
+<thead><tr>
+  <th>Molecule</th>
+  <th class="sort-btn" data-col="ld50">LD50 (mg/kg)</th>
+  <th>Class</th>
+  <th>Hepato</th>
+  <th>Neuro</th>
+  <th>Respi</th>
+  <th>BBB</th>
+  <th>Carc</th>
+  <th>Immuno</th>
+  <th>Eco</th>
+  <th># active CYPs</th>
+  <th>logP</th>
+  <th>MW</th>
+</tr></thead>
+<tbody id="tbody"></tbody>
+</table>
+</div>
+<p style="font-size:11px;color:var(--color-text-secondary);margin-top:0.75rem">★ = mol4, top candidate. Baseline row = NCT-503. Low-accuracy predictions (23%) highlighted in amber. All data from ProTox-3.0.</p>
+</div>
+<script>
+const data = [
+  {id:'NCT-503',ld50:1395,cls:4,hepato:0,neuro:1,respi:1,bbb:1,carc:0,immuno:0,eco:1,cyps:1,logP:4.18,mw:408.48,acc:54,baseline:true},
+  {id:'mol1',ld50:1920,cls:4,hepato:0,neuro:0,respi:0,bbb:1,carc:0,immuno:0,eco:1,cyps:2,logP:3.07,mw:200.23,acc:69},
+  {id:'mol2',ld50:510,cls:4,hepato:0,neuro:1,respi:1,bbb:1,carc:0,immuno:0,eco:1,cyps:5,logP:4.26,mw:258.31,acc:54},
+  {id:'mol3',ld50:300,cls:3,hepato:0,neuro:1,respi:1,bbb:1,carc:0,immuno:0,eco:1,cyps:1,logP:1.91,mw:217.27,acc:67},
+  {id:'mol4 ★',ld50:3500,cls:5,hepato:0,neuro:1,respi:1,bbb:1,carc:0,immuno:0,eco:0,cyps:1,logP:4.67,mw:343.57,acc:67,top:true},
+  {id:'mol5',ld50:1000,cls:4,hepato:1,neuro:1,respi:0,bbb:1,carc:0,immuno:0,eco:1,cyps:2,logP:3.99,mw:273.13,acc:67},
+  {id:'mol6',ld50:200,cls:3,hepato:0,neuro:1,respi:1,bbb:1,carc:1,immuno:0,eco:1,cyps:4,logP:3.05,mw:202.23,acc:54},
+  {id:'mol7',ld50:200,cls:3,hepato:0,neuro:1,respi:1,bbb:1,carc:0,immuno:0,eco:1,cyps:4,logP:3.31,mw:230.28,acc:67},
+  {id:'mol8',ld50:865,cls:4,hepato:0,neuro:1,respi:0,bbb:1,carc:1,immuno:0,eco:1,cyps:2,logP:4.77,mw:253.7,acc:54},
+  {id:'mol9',ld50:950,cls:4,hepato:0,neuro:1,respi:0,bbb:1,carc:1,immuno:0,eco:1,cyps:2,logP:5.08,mw:267.73,acc:23},
+  {id:'mol10',ld50:1500,cls:4,hepato:0,neuro:0,respi:1,bbb:1,carc:0,immuno:1,eco:0,cyps:1,logP:2.92,mw:225.24,acc:23},
+  {id:'mol11',ld50:200,cls:3,hepato:0,neuro:1,respi:1,bbb:1,carc:0,immuno:0,eco:1,cyps:4,logP:3.0,mw:216.25,acc:67},
+  {id:'mol12',ld50:950,cls:4,hepato:0,neuro:1,respi:1,bbb:1,carc:1,immuno:1,eco:1,cyps:4,logP:3.9,mw:225.65,acc:54},
+  {id:'mol13',ld50:950,cls:4,hepato:0,neuro:1,respi:1,bbb:1,carc:1,immuno:0,eco:1,cyps:3,logP:4.21,mw:239.67,acc:54},
+  {id:'mol14',ld50:1920,cls:4,hepato:0,neuro:1,respi:0,bbb:1,carc:1,immuno:1,eco:1,cyps:2,logP:3.38,mw:214.26,acc:68},
+  {id:'mol15',ld50:510,cls:4,hepato:0,neuro:1,respi:1,bbb:1,carc:0,immuno:0,eco:1,cyps:5,logP:4.57,mw:272.34,acc:67},
+  {id:'mol16',ld50:651,cls:4,hepato:1,neuro:1,respi:0,bbb:1,carc:0,immuno:0,eco:1,cyps:4,logP:4.3,mw:287.16,acc:67},
+  {id:'mol17',ld50:1000,cls:4,hepato:0,neuro:1,respi:1,bbb:1,carc:0,immuno:0,eco:1,cyps:2,logP:4.47,mw:267.73,acc:54},
+  {id:'mol18',ld50:1500,cls:4,hepato:0,neuro:0,respi:0,bbb:1,carc:0,immuno:1,eco:1,cyps:2,logP:3.84,mw:238.28,acc:54},
+  {id:'mol19',ld50:1000,cls:4,hepato:0,neuro:1,respi:1,bbb:1,carc:1,immuno:1,eco:1,cyps:3,logP:3.85,mw:239.67,acc:54},
+  {id:'mol20',ld50:500,cls:4,hepato:0,neuro:1,respi:1,bbb:1,carc:0,immuno:0,eco:1,cyps:1,logP:2.22,mw:231.29,acc:67},
+  {id:'mol21',ld50:500,cls:4,hepato:0,neuro:1,respi:0,bbb:1,carc:0,immuno:0,eco:1,cyps:5,logP:3.61,mw:216.25,acc:67},
+  {id:'mol22',ld50:300,cls:3,hepato:0,neuro:0,respi:0,bbb:1,carc:1,immuno:1,eco:1,cyps:1,logP:5.22,mw:281.13,acc:23},
+  {id:'mol23',ld50:1273,cls:4,hepato:0,neuro:1,respi:0,bbb:1,carc:0,immuno:0,eco:1,cyps:2,logP:5.67,mw:318.47,acc:67},
+];
+
+function clsPill(c){
+  if(c===5) return `<span class="pill pill-green">Class ${c}</span>`;
+  if(c===3) return `<span class="pill pill-red">Class ${c}</span>`;
+  return `<span class="pill pill-amber">Class ${c}</span>`;
+}
+function flagDot(v,lowAcc){
+  if(lowAcc) return `<span class="dot dot-m" title="low accuracy prediction"></span>`;
+  return v ? `<span class="dot dot-y"></span>` : `<span class="dot dot-n"></span>`;
+}
+function cypColor(n){
+  if(n>=5) return `<span style="color:#A32D2D;font-weight:500">${n}</span>`;
+  if(n>=3) return `<span style="color:#BA7517;font-weight:500">${n}</span>`;
+  return `${n}`;
+}
+function countFlags(d){
+  return d.hepato+d.neuro+d.respi+d.bbb+d.carc+d.immuno+d.eco;
+}
+
+function render(){
+  const sortBy = document.getElementById('sortSel').value;
+  const filterCls = document.getElementById('filterSel').value;
+  let rows = [...data];
+  if(filterCls !== 'all') rows = rows.filter(d => d.cls === +filterCls || d.baseline);
+  rows.sort((a,b)=>{
+    if(a.baseline) return -1; if(b.baseline) return 1;
+    if(sortBy==='ld50') return b.ld50-a.ld50;
+    if(sortBy==='class') return a.cls-b.cls;
+    if(sortBy==='flags') return countFlags(a)-countFlags(b);
+    const ai=parseInt(a.id.replace(/[^\d]/g,''))||0;
+    const bi=parseInt(b.id.replace(/[^\d]/g,''))||0;
+    return ai-bi;
+  });
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = rows.map(d=>{
+    const la = d.acc<30;
+    const bg = d.top ? 'style="background:rgba(26,123,0,0.04)"' : '';
+    return `<tr class="${d.baseline?'baseline':''}" ${bg}>
+      <td class="mol-name">${d.id}${d.baseline?' (baseline)':''}</td>
+      <td>${d.ld50.toLocaleString()}</td>
+      <td>${clsPill(d.cls)}</td>
+      <td>${flagDot(d.hepato,la)}</td>
+      <td>${flagDot(d.neuro,la)}</td>
+      <td>${flagDot(d.respi,la)}</td>
+      <td>${flagDot(d.bbb,la)}</td>
+      <td>${flagDot(d.carc,la)}</td>
+      <td>${flagDot(d.immuno,la)}</td>
+      <td>${flagDot(d.eco,la)}</td>
+      <td>${cypColor(d.cyps)}</td>
+      <td>${d.logP.toFixed(2)}</td>
+      <td>${d.mw.toFixed(1)}</td>
+    </tr>`;
+  }).join('');
+}
+document.getElementById('sortSel').addEventListener('change',render);
+document.getElementById('filterSel').addEventListener('change',render);
+render();
+</script>
